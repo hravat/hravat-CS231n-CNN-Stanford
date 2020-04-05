@@ -98,7 +98,7 @@ def svm_loss_vectorized(W, X, y, reg):
     # -num train is used to factor out the ones that are added
     # for correct class scores.Such should be set to 0
     loss = (np.sum(margin) - num_train) / num_train
-
+    loss += reg * np.sum(W * W) 
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -130,7 +130,10 @@ def svm_loss_vectorized(W, X, y, reg):
 
 
     dW = dW / num_train
-
+    
+    # Regularization gradient
+    dW = dW + reg * 2 * W
+    
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
