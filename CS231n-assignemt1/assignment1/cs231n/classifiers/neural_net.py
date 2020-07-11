@@ -70,7 +70,19 @@ class TwoLayerNet(object):
         W1, b1 = self.params['W1'], self.params['b1']
         W2, b2 = self.params['W2'], self.params['b2']
         N, D = X.shape
-
+        # Declare Additional useful variables
+        
+        ###Handle when y is none
+        if y is None: 
+            num_train = 1 
+        else:
+            num_train = len(y)
+        
+        dW1 = np.zeros_like(W1)
+        db1 = np.zeros_like(b1)
+        dW2 = np.zeros_like(W2)
+        db2 = np.zeros_like(b2)
+        
         # Compute the forward pass
         scores = None
         #############################################################################
@@ -79,6 +91,15 @@ class TwoLayerNet(object):
         # shape (N, C).                                                             #
         #############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        
+        fc1  = np.dot(X,W1)+b1
+        ## Relu
+        l1 = np.maximum(0,fc1)
+        scores = np.dot(l1,W2)+b2
+        
+        
+        
+        
 
         pass
 
@@ -97,7 +118,25 @@ class TwoLayerNet(object):
         # classifier loss.                                                          #
         #############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+        
+        ####CODE PICKED UP FROM SOFTMAX IMPLEMENTATION
+        #one hot encoding of Y
+        z = np.max(y) + 1
+        one_hot = np.eye(z)[y]
+        
+        scores_shifted = scores - np.max(scores, axis=1, keepdims=True)
+        scores_shifted=np.exp(scores_shifted)
+        denom = np.expand_dims(np.sum(scores_shifted,axis=-1),axis=-1)
+    
+        normailized_scores = scores_shifted/denom
+        loss = np.sum(-np.log(np.sum(normailized_scores*one_hot,axis=-1)))
+        
+        # Averege loss
+        loss /= num_train
+       
+        # Regularization
+        loss += reg * np.sum(W2 * W2)+reg * np.sum(W1 * W1)
+        
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -111,6 +150,41 @@ class TwoLayerNet(object):
         #############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
+        
+        ####CODE PICKED UP FROM SOFTMAX IMPLEMENTATION
+        normailized_scores = normailized_scores-one_hot  
+        
+        dW1 = np.dot(normailized_scores,np.transpose(W2))
+        m1 = dW1*(fc1>0) 
+        dW1 = np.dot(np.transpose(X),m1)
+                
+        db1 = m1.sum(axis=0)
+        
+        
+        dW2 = np.dot(np.transpose(l1),normailized_scores) 
+        db2 = np.sum(normailized_scores,axis=0,keepdims=True)
+        
+      
+        
+        # Averege loss
+        dW1 /= num_train
+        db1 /= num_train
+        dW2 /= num_train
+        db2 /= num_train   
+
+    
+    
+        # Regularization
+        dW2 += reg * 2 * W2  
+        dW1 += reg * 2 * W1
+        
+       
+        
+        grads['W1'] = dW1
+        grads['b1'] = db1
+        grads['W2'] = dW2
+        grads['b2'] = db2
+        
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****

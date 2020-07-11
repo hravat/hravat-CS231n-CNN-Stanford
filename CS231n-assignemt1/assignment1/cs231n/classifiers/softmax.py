@@ -108,6 +108,7 @@ def softmax_loss_vectorized(W, X, y, reg):
     one_hot = np.eye(z)[y]
     
     scores = np.dot(X,W)
+    # This is done to shift scores to prevent a log 0 appearing
     scores = scores - np.max(scores, axis=1, keepdims=True)
     scores=np.exp(scores)
     denom = np.expand_dims(np.sum(scores,axis=-1),axis=-1)
