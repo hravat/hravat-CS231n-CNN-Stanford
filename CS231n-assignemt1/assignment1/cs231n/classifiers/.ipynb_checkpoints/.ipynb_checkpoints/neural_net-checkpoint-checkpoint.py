@@ -69,7 +69,6 @@ class TwoLayerNet(object):
         # Unpack variables from the params dictionary
         W1, b1 = self.params['W1'], self.params['b1']
         W2, b2 = self.params['W2'], self.params['b2']
-       
         N, D = X.shape
         # Declare Additional useful variables
         
@@ -97,6 +96,10 @@ class TwoLayerNet(object):
         ## Relu
         l1 = np.maximum(0,fc1)
         scores = np.dot(l1,W2)+b2
+        
+        
+        
+        
 
         pass
 
@@ -159,7 +162,7 @@ class TwoLayerNet(object):
         
         
         dW2 = np.dot(np.transpose(l1),normailized_scores) 
-        db2 = np.sum(normailized_scores,axis=0)
+        db2 = np.sum(normailized_scores,axis=0,keepdims=True)
         
       
         
@@ -226,16 +229,13 @@ class TwoLayerNet(object):
             # them in X_batch and y_batch respectively.                             #
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-            batch_indices = np.random.choice(num_train, batch_size)
-            X_batch = X[batch_indices]
-            y_batch = y[batch_indices]
-             
+
             pass
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
             # Compute loss and gradients using the current minibatch
-            loss, grads = self.loss(X=X_batch, y=y_batch, reg=reg)
+            loss, grads = self.loss(X_batch, y=y_batch, reg=reg)
             loss_history.append(loss)
 
             #########################################################################
@@ -246,13 +246,6 @@ class TwoLayerNet(object):
             #########################################################################
             # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-            self.params['W1'] -= learning_rate*grads['W1']
-            self.params['W2'] -= learning_rate*grads['W2']
-            self.params['b1'] -= learning_rate*grads['b1']
-            self.params['b2'] -= learning_rate*grads['b2']
-            
-            
-            
             pass
 
             # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
