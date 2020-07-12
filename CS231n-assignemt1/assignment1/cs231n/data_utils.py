@@ -4,7 +4,8 @@ from builtins import range
 from six.moves import cPickle as pickle
 import numpy as np
 import os
-from scipy.misc import imread
+#from scipy.ndimage import imread
+import matplotlib.pyplot as plt
 import platform
 import urllib.request
 
@@ -16,7 +17,7 @@ def load_pickle(f):
         return  pickle.load(f, encoding='latin1')
     raise ValueError("invalid python version: {}".format(version))
 
-def load_CIFAR_batch(filename):
+def load_CIFAR_batch_aws(filename):
     """ load single batch of cifar """
     datadict = pickle.load(urllib.request.urlopen(filename),encoding="latin1")
     X = datadict['data']
@@ -25,19 +26,38 @@ def load_CIFAR_batch(filename):
     Y = np.array(Y)
     return X, Y
 
-def load_CIFAR10(ROOT):
+
+def load_CIFAR_batch_local(filename):
+  """ load single batch of cifar """
+  with open(filename, 'rb') as f:
+    datadict = load_pickle(f)
+    X = datadict['data']
+    Y = datadict['labels']
+    X = X.reshape(10000, 3, 32, 32).transpose(0,2,3,1).astype("float")
+    Y = np.array(Y)
+    return X, Y
+
+
+
+def load_CIFAR10(ROOT,run_site):
     """ load all of cifar """
     xs = []
     ys = []
     for b in range(1,6):
         f = os.path.join(ROOT, 'data_batch_%d' % (b, ))
-        X, Y = load_CIFAR_batch(f)
+        if run_site == 'Local':
+            X, Y = load_CIFAR_batch_local(f)
+        if run_site == 'AWS':
+            X, Y = load_CIFAR_batch_aws(f)
         xs.append(X)
         ys.append(Y)
     Xtr = np.concatenate(xs)
     Ytr = np.concatenate(ys)
     del X, Y
-    Xte, Yte = load_CIFAR_batch(os.path.join(ROOT, 'test_batch'))
+    if run_site == 'Local':
+        Xte, Yte = load_CIFAR_batch_local(os.path.join(ROOT, 'test_batch'))
+    if run_site == 'AWS':
+        Xte, Yte = load_CIFAR_batch_aws(os.path.join(ROOT, 'test_batch'))    
     return Xtr, Ytr, Xte, Yte
 
 
@@ -49,7 +69,7 @@ def get_CIFAR10_data(num_training=49000, num_validation=1000, num_test=1000,
     condensed to a single function.
     """
     # Load the raw CIFAR-10 data
-    cifar10_dir = 'cs231n/datasets/cifar-10-batches-py'
+    cifar10_dir = 'cs231n\datasets\cifar-10-batches-py'
     X_train, y_train, X_test, y_test = load_CIFAR10(cifar10_dir)
 
     # Subsample the data
@@ -138,7 +158,7 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
                         np.ones(num_images, dtype=np.int64)
         for j, img_file in enumerate(filenames):
             img_file = os.path.join(path, 'train', wnid, 'images', img_file)
-            img = imread(img_file)
+            img = plt.imread(img_file)
             if img.ndim == 2:
         ## grayscale file
                 img.shape = (64, 64, 1)
@@ -163,7 +183,7 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
         X_val = np.zeros((num_val, 3, 64, 64), dtype=dtype)
         for i, img_file in enumerate(img_files):
             img_file = os.path.join(path, 'val', 'images', img_file)
-            img = imread(img_file)
+            img = plt.imread(img_file)
             if img.ndim == 2:
                 img.shape = (64, 64, 1)
             X_val[i] = img.transpose(2, 0, 1)
@@ -175,7 +195,7 @@ def load_tiny_imagenet(path, dtype=np.float32, subtract_mean=True):
     X_test = np.zeros((len(img_files), 3, 64, 64), dtype=dtype)
     for i, img_file in enumerate(img_files):
         img_file = os.path.join(path, 'test', 'images', img_file)
-        img = imread(img_file)
+        img = plt.imread(img_file)
         if img.ndim == 2:
             img.shape = (64, 64, 1)
         X_test[i] = img.transpose(2, 0, 1)
