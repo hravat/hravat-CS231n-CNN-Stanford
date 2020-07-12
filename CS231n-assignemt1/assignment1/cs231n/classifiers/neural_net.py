@@ -298,6 +298,9 @@ class TwoLayerNet(object):
         # TODO: Implement this function; it should be VERY simple!                #
         ###########################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+        
+        y_pred = np.argmax(self.loss(X), axis=1)
+        
 
         pass
 
