@@ -27,7 +27,14 @@ def affine_forward(x, w, b):
     # will need to reshape the input into rows.                               #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    
+    num_inputs=np.shape(x)[0]
+    input_shape=np.prod(np.shape(x)[1:])
+    
+    temp_x=np.reshape(x,(num_inputs,input_shape))
+    out = np.dot(temp_x,w)+b
+    
+    
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -60,7 +67,18 @@ def affine_backward(dout, cache):
     # TODO: Implement the affine backward pass.                               #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+      
+    num_inputs=np.shape(x)[0]
+    input_shape=np.prod(np.shape(x)[1:])
+    
+    dx = np.transpose(np.dot(w,np.transpose(dout)))    
+    dx = np.reshape(dx,(np.shape(x)))
+    
+    temp_x=np.reshape(x,(num_inputs,input_shape))
+    dw = np.dot(np.transpose(temp_x),dout)       
+    
+    db = np.sum(dout,axis=0)
+    
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -86,7 +104,8 @@ def relu_forward(x):
     # TODO: Implement the ReLU forward pass.                                  #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    out = np.maximum(0, x)
+    
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -114,6 +133,8 @@ def relu_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
+    dx = dout * (x > 0)
+    
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****

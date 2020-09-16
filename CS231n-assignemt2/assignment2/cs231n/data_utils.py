@@ -53,9 +53,10 @@ def get_CIFAR10_data(
     condensed to a single function.
     """
     # Load the raw CIFAR-10 data
-    cifar10_dir = os.path.join(
-        os.path.dirname(__file__), "datasets/cifar-10-batches-py"
-    )
+    #cifar10_dir = os.path.join(
+     #   os.path.dirname(__file__), "datasets/cifar-10-batches-py"
+    #)
+    cifar10_dir="D:\jupyterlab\hravat-CS231n-CNN-Stanford\datasets\cifar-10-python"
     X_train, y_train, X_test, y_test = load_CIFAR10(cifar10_dir)
 
     # Subsample the data
