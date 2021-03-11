@@ -1,6 +1,6 @@
 from builtins import range
 import numpy as np
-from math import sqrt
+
 
 
 def affine_forward(x, w, b):
@@ -300,11 +300,11 @@ def batchnorm_backward(dout, cache):
     dldx = dout*gamma
     
     dldsigb1 = np.sum(dldx*(x-sample_mean),axis=0)
-    dldsigb2 = -0.5*((sample_var)**(-1.5)) # eps removed
+    dldsigb2 = -0.5*((sample_var+eps)**(-1.5))
    
     dldsigb  = dldsigb1*dldsigb2
   
-    dlmub1=-((sample_var)**0.5)**-1 # eps removed
+    dlmub1=-((sample_var+eps)**0.5)**-1
     dlmub2=dlmub1*np.sum(dldx,axis=0)
    
     dlmub3=-2*np.sum((x-sample_mean),axis=0)/N
@@ -312,7 +312,8 @@ def batchnorm_backward(dout, cache):
     
     dlmub=dlmub2+dlmub4
     
-    dx =  (dldx*((sample_var)**0.5)**-1)+((2*dldsigb/N)*(x-sample_mean))+(dlmub/N) # eps removed
+    dx =  (dldx*((sample_var+eps)**0.5)**-1)+((2*dldsigb/N)*(x-sample_mean))+(dlmub/N)
+    
     
     dgamma= np.sum(dout*x_norm,axis=0)
     dbeta=  np.sum(dout,axis=0)

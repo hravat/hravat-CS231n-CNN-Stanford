@@ -224,7 +224,7 @@ class FullyConnectedNet(object):
         self.params['b1'] =  np.zeros(hidden_dims[0])
         
         if self.normalization != None:
-            self.params['gamma1'] = np.ones(hidden_dims[0])
+            self.params['gamma1'] = np.ones(hidden_dims[0]) 
             self.params['beta1'] = np.zeros(hidden_dims[0])
         
         
@@ -240,7 +240,9 @@ class FullyConnectedNet(object):
         
         self.params['W'+str(self.num_layers)] =  np.random.normal(loc=0,scale=weight_scale,size=(hidden_dims[i+1],num_classes))
         self.params['b'+str(self.num_layers)] =  np.zeros(num_classes)
-       
+         if self.normalization != None:
+                self.params['gamma'+str(self.num_layers)] = np.ones(num_classes) 
+                self.params['beta'+str(self.num_layers)] = np.zeros(num_classes)
        
       
         
@@ -307,36 +309,21 @@ class FullyConnectedNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        gamma_curr, beta_curr, bn_params = None, None, None
-
+        
+        
         w_curr=self.params['W1']
         b_curr=self.params['b1']
-        if self.normalization != None:
-            gamma_curr=self.params['gamma1']
-            beta_curr = self.params['beta1']
-            bn_params = self.bn_params[0]
         cache={}
     
-        if self.normalization != None:
-            stg_curr_out, stg_curr_cache = affine_norm_relu_forward(X,w_curr,b_curr,
-                                                                    gamma_curr,beta_curr,self.normalization,bn_params )
-            cache['stg_1_cache'] = stg_curr_cache
-        else:
-            stg_curr_out,stg_curr_cache  = affine_relu_forward(X,w_curr,b_curr)
-            cache['stg_1_cache']=stg_curr_cache
+        
+        stg_curr_out,stg_curr_cache  = affine_relu_forward(X,w_curr,b_curr)
+        cache['stg_1_cache']=stg_curr_cache
         
         for i in range(self.num_layers-2):
             w_curr=self.params['W'+str(i+2)]
             b_curr=self.params['b'+str(i+2)]
             stg_prev_out,stg_prev_cache = stg_curr_out,stg_curr_cache
-            if self.normalization != None:
-                gamma_curr = self.params['gamma' + str(i + 2)]
-                beta_curr = self.params['beta' + str(i + 2)]
-                bn_params = self.bn_params[i + 1]
-                stg_curr_out, stg_curr_cache   = affine_norm_relu_forward(stg_prev_out,w_curr,
-                                                                        b_curr,gamma_curr,beta_curr,self.normalization,bn_params )
-            else:
-                stg_curr_out,stg_curr_cache  = affine_relu_forward(stg_prev_out,w_curr,b_curr)
+            stg_curr_out,stg_curr_cache  = affine_relu_forward(stg_prev_out,w_curr,b_curr)
             cache['stg_'+str(i+2)+'_cache']=stg_curr_cache
         
         w_curr=self.params['W'+str(self.num_layers)]
@@ -381,26 +368,23 @@ class FullyConnectedNet(object):
         
         for i in range(self.num_layers):
             w_reg += np.sum(self.params['W'+str(i+1)]*self.params['W'+str(i+1)])
-
+        
+       
         loss += w_reg*self.reg*0.5
         
         
         dx,dw,db = affine_backward(dx,cache['stg_'+str(self.num_layers)+'_cache'])
         grads['W'+str(self.num_layers)]=dw+self.reg*self.params['W'+str(self.num_layers)]
         grads['b'+str(self.num_layers)]=db
-
+        
+        
         
         for i in range(self.num_layers-1,0,-1):
-
-            if self.normalization != None:
-                dx,dw,db,dgamma,dbeta = affine_norm_relu_backward(dx, cache['stg_' + str(i) + '_cache'],self.normalization)
-                grads['gamma' + str(i)] = dgamma
-                grads['beta' + str(i)] = dbeta
-            else:
-                dx,dw,db = affine_relu_backward(dx,cache['stg_'+str(i)+'_cache'])
+            dx,dw,db = affine_relu_backward(dx,cache['stg_'+str(i)+'_cache'])
             grads['W'+str(i)]=dw+self.reg*self.params['W'+str(i)]
             grads['b'+str(i)]=db
-
+           
+        
         pass
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -411,45 +395,29 @@ class FullyConnectedNet(object):
         return loss, grads
     
     
-def affine_norm_relu_forward(x, w, b ,gamma, beta, normalization ,bn_param):
-    """
-    Convenience layer that perorms an affine transform followed by a ReLU
-
-    Inputs:
-    - x: Input to the affine layer
-    - w, b: Weights for the affine layer
-
-    Returns a tuple of:
-    - out: Output from the ReLU
-    - cache: Object to give to the backward pass
-    """
-
-    bn_cache, do_cache = None, None
-    out, fc_cache = affine_forward(x, w, b)
-
-    # batch/layer norm
-    if normalization == 'batchnorm':
-        out, bn_cache = batchnorm_forward(out, gamma, beta, bn_param)
-
-    out, relu_cache = relu_forward(out)
-    cache = (fc_cache, relu_cache,bn_cache )
-    return out, cache
+    def affine_norm_relu_forward(x, w, b):
+        """
+        Convenience layer that perorms an affine transform followed by a ReLU
+    
+        Inputs:
+        - x: Input to the affine layer
+        - w, b: Weights for the affine layer
+    
+        Returns a tuple of:
+        - out: Output from the ReLU
+        - cache: Object to give to the backward pass
+        """
+        a, fc_cache = affine_forward(x, w, b)
+        out, relu_cache = relu_forward(a)
+        cache = (fc_cache, relu_cache)
+        return out, cache
 
 
-
-
-
-def affine_norm_relu_backward(dout, cache , normalization):
-    """
-    Backward pass for the affine-relu convenience layer
-    """
-    fc_cache, relu_cache , bn_cache  = cache
-    dout = relu_backward(dout, relu_cache)
-
-    # batch/layer norm
-    dgamma, dbeta = None, None
-    if normalization == 'batchnorm':
-        dout, dgamma, dbeta = batchnorm_backward_alt(dout, bn_cache)
-
-    dx, dw, db = affine_backward(dout, fc_cache)
-    return dx, dw, db ,dgamma, dbeta
+    def affine_norm_relu_backward(dout, cache):
+        """
+        Backward pass for the affine-relu convenience layer
+        """
+        fc_cache, relu_cache = cache
+        da = relu_backward(dout, relu_cache)
+        dx, dw, db = affine_backward(da, fc_cache)
+        return dx, dw, db
