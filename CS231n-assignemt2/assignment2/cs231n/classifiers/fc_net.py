@@ -240,7 +240,7 @@ class FullyConnectedNet(object):
         
         self.params['W'+str(self.num_layers)] =  np.random.normal(loc=0,scale=weight_scale,size=(hidden_dims[i+1],num_classes))
         self.params['b'+str(self.num_layers)] =  np.zeros(num_classes)
-       
+
        
       
         
