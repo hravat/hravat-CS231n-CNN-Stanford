@@ -160,24 +160,37 @@ def adam(w, dw, config=None):
     # using it in any calculations.                                           #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    config['t']=config['t']+1
-    config['m']=config['beta1']*config['m']+((1-config['beta1'])*dw)
-    mt=config['m']/(1-(config['beta1']**config['t']))
+     
+    ## New approach after following https://github.com/jariasf/CS231n/blob/master/assignment2/cs231n/optim.py
+    # And reading instructions carefully 
+    # We will strore all values in variables , calculate and then resotre in config 
     
-    config['v']=config['beta2']*config['v']+((1-config['beta2'])*dw**2)
-    vt=config['v']/(1-(config['beta2']**config['t']))
+    t = config["t"]
+    m = config["m"]
+    beta1 = config["beta1"]
+    beta2 = config["beta2"]
+    v = config["v"]
+    learning = config["learning_rate"]
+    epsilon = config["epsilon"]
     
-    num=config['learning_rate']*config['m']
-    den=np.sqrt(config['v'])+config['epsilon']    
+      
+    t=t+1
+    m = beta1*m + (1-beta1)*dw
+    mt = m/(1-beta1**t)
+    v  = beta2*v + (1-beta2)*dw**2
+    vt = v/(1-beta2**t)    
+    num = learning*mt
+    den = np.sqrt(vt) + epsilon
+    next_w = w- (num/den)
     
-    next_w = w-((config['learning_rate']*mt)/(np.sqrt(vt) + config['epsilon']))
+    config['m']=m
+    config['v']=v
+    config['t']=t
     
-
+    pass 
     
     
-    
-    pass
+  
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -185,3 +198,4 @@ def adam(w, dw, config=None):
     ###########################################################################
 
     return next_w, config
+    

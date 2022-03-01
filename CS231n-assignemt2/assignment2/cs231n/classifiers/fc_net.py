@@ -241,8 +241,7 @@ class FullyConnectedNet(object):
         self.params['W'+str(self.num_layers)] =  np.random.normal(loc=0,scale=weight_scale,size=(hidden_dims[i+1],num_classes))
         self.params['b'+str(self.num_layers)] =  np.zeros(num_classes)
 
-       
-      
+
         
         
         pass
@@ -430,6 +429,8 @@ def affine_norm_relu_forward(x, w, b ,gamma, beta, normalization ,bn_param):
     # batch/layer norm
     if normalization == 'batchnorm':
         out, bn_cache = batchnorm_forward(out, gamma, beta, bn_param)
+    elif normalization == 'layernorm':
+        out, bn_cache = layernorm_forward(out, gamma, beta, bn_param)    
 
     out, relu_cache = relu_forward(out)
     cache = (fc_cache, relu_cache,bn_cache )
@@ -450,6 +451,8 @@ def affine_norm_relu_backward(dout, cache , normalization):
     dgamma, dbeta = None, None
     if normalization == 'batchnorm':
         dout, dgamma, dbeta = batchnorm_backward_alt(dout, bn_cache)
+    elif normalization == 'layernorm':
+        dout, dgamma, dbeta = layernorm_backward(dout, bn_cache)          
 
     dx, dw, db = affine_backward(dout, fc_cache)
     return dx, dw, db ,dgamma, dbeta
